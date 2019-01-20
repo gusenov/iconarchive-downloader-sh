@@ -9,6 +9,7 @@
 url="http://www.iconarchive.com/show/socialmedia-icons-by-uiconstock/Github-icon.html"
 output="."
 size=""
+is_direct=false
 
 for i in "$@"; do
 	case $i in
@@ -24,9 +25,10 @@ for i in "$@"; do
 			size="${i#*=}"
 			shift # past argument=value
 			;;
-		*)
-			# unknown option
-			;;
+		--direct)
+		  is_direct=true
+		  shift # past argument
+		  ;;
 	esac
 done
 
@@ -61,13 +63,20 @@ echo "$matches" | sort -V -u | while read line ; do
 	fi
 
 	path=$(echo $line | sed 's/https\?:\/\///')
-	dir=$(dirname "${path}")
-	wget --quiet "http://$path" -P "$output/$dir/"
 
-	if [ ! -f "$output/$path" ]; then
+	if [ "$is_direct" = true ]; then
+		wget --quiet "http://$path" -P "$output/"
+		filepath="$output/$(basename "$path")"
+	else
+		dir=$(dirname "${path}")
+		wget --quiet "http://$path" -P "$output/$dir/"
+		filepath="$output/$path"
+	fi
+
+	if [ ! -f "$filepath" ]; then
 		echo "File does not exist!"
 	else
-		echo "$output/$path"
+		echo "$filepath"
 	fi
-done
 
+done
